@@ -16,7 +16,7 @@ By the end of this lesson, you will be able to:
 ## Prerequisites
 
 - Completed Lesson 0: Docker Networking Fundamentals
-- DevPod configured and working
+- Containerlab installed ([Linux Setup Guide](../../../docs/getting-started/linux-setup.md))
 - Basic YAML knowledge
 
 ## Video Outline
@@ -57,9 +57,8 @@ By the end of this lesson, you will be able to:
 ### 3. Environment Setup (3 min)
 
 ```bash
-# Start the DevPod
+# Navigate to the lesson
 cd lessons/clab/01-containerlab-primer
-devpod up .
 
 # Verify containerlab
 containerlab version
@@ -181,16 +180,15 @@ graph LR
 ```
 01-containerlab-primer/
 ├── README.md              # This file
-├── .devcontainer/
-│   └── devcontainer.json  # DevPod configuration
 ├── topology/
 │   └── lab.clab.yml       # Main lab topology
 ├── exercises/
 │   └── README.md          # Hands-on exercises
 ├── solutions/
 │   └── README.md          # Exercise solutions
-└── tests/
-    └── test_lab.py        # Automated validation
+├── tests/
+│   └── test_lab.py        # Automated validation
+└── script.md              # Video script
 ```
 
 ## Key Commands Reference

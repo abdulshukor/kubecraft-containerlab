@@ -7,14 +7,14 @@
 | **Lesson Number** | 00 |
 | **Title** | Docker Networking Fundamentals |
 | **Duration Target** | 12-14 minutes |
-| **Prerequisites** | DevPods course, Basic Docker knowledge |
+| **Prerequisites** | Basic Docker knowledge, Linux command line |
 | **Learning Objectives** | Understand network drivers, create custom networks, connect containers across networks |
 
 ---
 
 ## Pre-Recording Checklist
 
-- [ ] DevPod environment tested
+- [ ] Docker installed and running
 - [ ] No stale containers: `docker rm -f $(docker ps -aq) 2>/dev/null`
 - [ ] No stale networks: `docker network prune -f`
 - [ ] Screen resolution set (1920x1080)

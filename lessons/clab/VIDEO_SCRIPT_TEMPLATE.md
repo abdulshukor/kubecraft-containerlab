@@ -18,7 +18,7 @@ Use this template for creating video lesson scripts. Copy this file and rename i
 
 ## Pre-Recording Checklist
 
-- [ ] DevPod environment tested and working
+- [ ] Lab environment tested (containerlab installed, Docker running)
 - [ ] All commands verified to work
 - [ ] Screen resolution set (1920x1080 recommended)
 - [ ] Terminal font size increased for readability

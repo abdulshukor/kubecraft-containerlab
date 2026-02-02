@@ -4,14 +4,6 @@ Before starting the Network Fundamentals Lab course, ensure you have the followi
 
 ## Required Knowledge
 
-### From DevPods Course
-
-You should be comfortable with:
-
-- Creating and managing DevPods/Dev Containers
-- Understanding the devcontainer.json configuration
-- Working with container-based development environments
-
 ### From Kubernetes Course
 
 You should understand:
@@ -41,24 +33,22 @@ You should know how to:
 
 ## Required Tools
 
-### On Your Local Machine
+### On Your Linux System
 
 | Tool | Purpose | Installation |
 |------|---------|--------------|
-| DevPod | Development environment | [devpod.sh](https://devpod.sh) |
+| Docker | Container runtime | [docker.com](https://docker.com) |
+| Containerlab | Network lab orchestration | [containerlab.dev](https://containerlab.dev) |
 | Git | Version control | `apt install git` or [git-scm.com](https://git-scm.com) |
-| Docker | Container runtime | [docker.com](https://docker.com) or Podman |
+| Python 3 | Running tests | `apt install python3` |
+| pytest | Test framework | `pip3 install pytest` |
 
-### Provided in DevPod
+### Network OS Images
 
-The following are pre-installed in each lesson's DevPod:
+The following images are pulled during setup:
 
-- containerlab
-- Docker CLI (Docker-in-Docker)
-- Network OS images (pulled on first use)
-- Python 3 with pytest
-- Ansible
-- Terraform (later lessons)
+- Nokia SR Linux (`ghcr.io/nokia/srlinux:24.10.1`)
+- Additional images as needed per lesson
 
 ## Hardware Requirements
 
@@ -95,18 +85,13 @@ Some lessons use network operating systems that require free registration:
 
 Before starting, verify you can:
 
-- [ ] Create a DevPod for a project
 - [ ] Run `docker ps` and understand the output
+- [ ] Run `containerlab version` successfully
 - [ ] Clone a Git repository
 - [ ] SSH into a remote machine (conceptual understanding)
 - [ ] Explain what an IP address is (even if basics)
 
 ## What If I'm Missing Something?
-
-### Missing DevPod Knowledge
-
-Complete the DevPods fundamentals course first, or review:
-- [DevPod Documentation](https://devpod.sh/docs)
 
 ### Missing Docker Knowledge
 
@@ -119,10 +104,15 @@ Review these concepts:
 Complete a Git basics tutorial:
 - [Git Handbook](https://guides.github.com/introduction/git-handbook/)
 
+### Missing Linux Knowledge
+
+If you're new to Linux command line:
+- [Linux Command Line Basics](https://ubuntu.com/tutorials/command-line-for-beginners)
+
 ## Ready to Start?
 
 If you meet the prerequisites, proceed to:
 
-1. [DevPod Setup](devpod-setup.md) - Configure your environment
+1. [Linux Setup](linux-setup.md) - Install containerlab and Docker
 2. [Fork Workflow](fork-workflow.md) - Set up your repository
 3. [Lesson 0](../../lessons/clab/00-docker-networking/) - Begin learning!

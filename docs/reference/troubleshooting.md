@@ -140,56 +140,6 @@ containerlab inspect -t topology.clab.yml
 
 ---
 
-## DevPod Issues
-
-### DevPod Won't Start
-
-**Check 1: Provider Configured**
-```bash
-devpod provider list
-```
-
-**Check 2: Docker Available**
-```bash
-docker ps
-```
-
-**Check 3: Remove Stale DevPod**
-```bash
-devpod list
-devpod delete <name>
-devpod up .
-```
-
----
-
-### Docker-in-Docker Not Working
-
-**Symptom:** `docker` commands fail inside DevPod
-
-**Check Socket:**
-```bash
-ls -la /var/run/docker.sock
-```
-
-**Check Feature Enabled:**
-Verify `devcontainer.json` includes:
-```json
-{
-  "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
-  }
-}
-```
-
-**Rebuild:**
-```bash
-devpod delete .
-devpod up .
-```
-
----
-
 ## Network OS Issues
 
 ### SR Linux

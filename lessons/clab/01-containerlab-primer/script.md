@@ -7,20 +7,20 @@
 | **Lesson Number** | 01 |
 | **Title** | Containerlab Primer |
 | **Duration Target** | 12-15 minutes |
-| **Prerequisites** | Lesson 0: Docker Networking, DevPods course |
+| **Prerequisites** | Lesson 0: Docker Networking, Linux environment with containerlab |
 | **Learning Objectives** | Deploy containerlab topology, understand topology files, connect to network devices |
 
 ---
 
 ## Pre-Recording Checklist
 
-- [ ] DevPod environment tested and working
+- [ ] Lab environment tested (containerlab installed, Docker running)
 - [ ] SR Linux image pulled: `docker pull ghcr.io/nokia/srlinux:24.10.1`
 - [ ] Screen resolution set (1920x1080)
 - [ ] Terminal font size increased (14-16pt)
 - [ ] Notifications disabled
 - [ ] Clean terminal: `clear && history -c`
-- [ ] No labs running: `containerlab destroy --all`
+- [ ] No labs running: `sudo containerlab destroy --all`
 
 ---
 
@@ -70,15 +70,12 @@
 
 > **[VOICEOVER]**
 >
-> "We're using DevPods for our development environment. Each lesson has its own devcontainer configuration with all the tools pre-installed."
+> "For this course, you need containerlab and Docker installed on your Linux system. If you haven't set this up yet, follow the Linux Setup guide in the course documentation."
 
 **Demo Commands:**
 ```bash
 # Navigate to the lesson
 cd lessons/clab/01-containerlab-primer
-
-# Start DevPod (if not already in it)
-# devpod up .
 
 # Verify containerlab is installed
 containerlab version

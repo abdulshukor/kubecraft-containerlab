@@ -5,8 +5,8 @@
 **Course Name:** Network Fundamentals Lab
 **Target Audience:** Junior DevOps engineers with basic Docker, Linux, and Kubernetes knowledge but limited networking experience
 **Format:** 6-8 video lessons (10-15 minutes each) with hands-on labs
-**Environment:** DevPods-based development containers per lesson
-**Part of:** Larger DevOps curriculum (assumes DevPods and K8s fundamentals completed)
+**Environment:** Native Linux with containerlab
+**Part of:** Larger DevOps curriculum (assumes K8s fundamentals completed)
 
 ---
 
@@ -56,7 +56,7 @@ By the end of this series, students will be able to:
 **Topics:**
 - What is containerlab and why DevOps engineers should care
 - Containerlab resources: documentation, Discord community, GitHub topics
-- Setting up the DevPod environment
+- Setting up the containerlab environment
 - Pulling free network OS images (Nokia SR Linux)
 - Understanding topology files (YAML structure)
 - Deploying your first 2-node topology
@@ -231,7 +231,7 @@ kubecraft/
 ├── docs/                               # User-facing documentation
 │   ├── getting-started/
 │   │   ├── prerequisites.md            # What you need before starting
-│   │   ├── devpod-setup.md             # DevPod configuration guide
+│   │   ├── linux-setup.md              # Linux environment setup guide
 │   │   └── fork-workflow.md            # How to fork and submit exercises
 │   │
 │   ├── reference/
@@ -250,8 +250,6 @@ kubecraft/
         │
         ├── 01-containerlab-primer/
         │   ├── README.md               # Lesson objectives, outline
-        │   ├── .devcontainer/
-        │   │   └── devcontainer.json   # DevPod configuration
         │   ├── topology/
         │   │   └── lab.clab.yml        # Containerlab topology file
         │   ├── configs/                # Device configuration files
@@ -261,7 +259,7 @@ kubecraft/
         │   │   └── README.md           # Exercise solutions
         │   ├── tests/
         │   │   └── test_connectivity.py # Automated validation
-        │   └── transcript.md           # Video transcript (post-recording)
+        │   └── script.md               # Video script
         │
         ├── 02-ip-fundamentals/
         │   └── ... (same structure)
@@ -306,11 +304,10 @@ kubecraft/
 - Mention: Discord community for help
 
 **Section 2: Environment Setup (3 minutes)**
-- DevPod setup (reference prior course)
-- Walk through the devcontainer.json configuration
-- Explain containerlab installation in the container
+- Linux environment setup (reference linux-setup.md)
+- Verify containerlab installation: `containerlab version`
 - Pull Nokia SR Linux image (explain: free, no license needed)
-- Verify installation: `containerlab version`
+- Verify Docker is running: `docker ps`
 
 **Section 3: Your First Topology (4 minutes)**
 - Explain topology file structure (YAML)
@@ -419,13 +416,12 @@ For this course, we'll use exclusively free, containerized network operating sys
 
 1. [ ] Review and approve this course plan
 2. [ ] Create repository folder structure
-3. [ ] Set up Lesson 1 DevPod configuration
-4. [ ] Create Lesson 1 topology files
-5. [ ] Write Lesson 1 exercises and solutions
-6. [ ] Create automated tests for Lesson 1
-7. [ ] Record Lesson 1 video
-8. [ ] Write transcript
-9. [ ] Iterate for remaining lessons
+3. [ ] Create Lesson 1 topology files
+4. [ ] Write Lesson 1 exercises and solutions
+5. [ ] Create automated tests for Lesson 1
+6. [ ] Record Lesson 1 video
+7. [ ] Write transcript
+8. [ ] Iterate for remaining lessons
 
 ---
 

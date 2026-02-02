@@ -59,12 +59,15 @@ git remote -v
 # Navigate to lesson
 cd lessons/clab/01-containerlab-primer
 
-# Start DevPod
-devpod up .
+# Deploy the lab
+sudo containerlab deploy -t topology/lab.clab.yml
 
 # Work on exercises...
 
-# When done, save your work
+# When done, destroy the lab
+sudo containerlab destroy -t topology/lab.clab.yml --cleanup
+
+# Save your work
 git add exercises/
 git commit -m "Complete Lesson 1 Exercise 2"
 git push origin main

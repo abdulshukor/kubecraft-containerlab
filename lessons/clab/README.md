@@ -61,32 +61,31 @@ Complete these to solidify learning:
 ```
 XX-lesson-name/
 ├── README.md           # Start here - objectives, outline
-├── .devcontainer/      # DevPod configuration
 ├── topology/           # Containerlab topology files
 ├── configs/            # Device configurations
 ├── exercises/          # Hands-on exercises
 ├── solutions/          # Exercise answers
 ├── tests/              # Automated validation
-└── transcript.md       # Video transcript
+└── script.md           # Video script
 ```
 
 ### Workflow
 
 1. **Watch** the video lesson
 2. **Read** the README for objectives
-3. **Start** the DevPod: `devpod up .`
-4. **Deploy** the lab: `containerlab deploy -t topology/lab.clab.yml`
-5. **Complete** exercises in `exercises/`
-6. **Validate** with `pytest tests/`
+3. **Deploy** the lab: `sudo containerlab deploy -t topology/lab.clab.yml`
+4. **Complete** exercises in `exercises/`
+5. **Validate** with `pytest tests/`
+6. **Destroy** the lab: `sudo containerlab destroy -t topology/lab.clab.yml --cleanup`
 7. **Commit** your work to your fork
 
 ## Prerequisites
 
 Before starting this series:
 
-- [ ] Completed DevPods fundamentals course
 - [ ] Completed Kubernetes basics course
 - [ ] Comfortable with Docker and Linux CLI
+- [ ] Containerlab installed ([Linux Setup Guide](../../docs/getting-started/linux-setup.md))
 - [ ] Forked this repository ([Fork Guide](../../docs/getting-started/fork-workflow.md))
 
 ## Time Commitment
