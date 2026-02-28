@@ -28,41 +28,49 @@ kubecraft/
 └── CLAUDE.md                # This file
 ```
 
-## Content Audience Convention
+## Branch Model
 
-The `main` branch contains both student-facing and instructor-only content. The convention:
+The repo uses two branches:
 
-**Student-facing** (what students interact with after forking):
+- **`instructor`** (working branch) -- contains all content (student + instructor)
+- **`main`** (student view) -- auto-generated, contains only student-facing content
+
+A GitHub Action (`.github/workflows/sync-student-branch.yml`) syncs `instructor` to `main` on every push, stripping files listed in `.admin-files`.
+
+**Student-facing** (what students see on `main` after forking):
 - `README.md` -- Lesson overview, objectives, key concepts
 - `topology/` -- Containerlab topology files
 - `exercises/` -- Hands-on exercises
 - `solutions/` -- Exercise solutions (intentionally visible)
 - `tests/` -- Automated validation
 
-**Instructor-only** (video production and personal notes):
+**Instructor-only** (stripped from `main`, only on `instructor`):
 - `script.md` -- Video recording script
 - `COURSE_PLAN.md` -- Course-level planning
 - `VIDEO_SCRIPT_TEMPLATE.md` -- Template for scripts
+- `CLAUDE.md` -- This file
+- `docs/plans/` -- Design docs and implementation plans
 
-Students fork the repo and work through lessons in order. Instructor-only files are present in the fork but students are not directed to them.
+Students fork `main` and work through lessons in order. They never see instructor content.
 
 ## Git Workflow
 
-**IMPORTANT:** Always follow this workflow:
+**IMPORTANT:** Always follow this workflow. All work happens on the `instructor` branch (or feature branches off it). Never edit `main` directly -- it is auto-generated.
 
-1. **Never commit directly to main** - Always create a feature branch first
+1. **Never commit directly to instructor** - Always create a feature branch first
 2. **Branch naming:** `feature/<descriptive-name>` (e.g., `feature/lesson-2-ip-fundamentals`)
 3. **Push branches to origin** before creating PRs
-4. **Use GitHub CLI** for PR creation: `gh pr create --base main`
+4. **Use GitHub CLI** for PR creation: `gh pr create --base instructor`
 
 ```bash
 # Standard workflow
+git checkout instructor
 git checkout -b feature/your-feature-name
 # ... make changes ...
 git add <specific-files>
 git commit -m "Descriptive message"
 git push -u origin feature/your-feature-name
-gh pr create --base main --title "Title" --body "Description"
+gh pr create --base instructor --title "Title" --body "Description"
 ```
 
 ## Content Guidelines
