@@ -15,6 +15,8 @@ Some tests require exercises to be completed first. Read each test's docstring f
 From this lesson's directory (`lessons/clab/00-docker-networking/`):
 
 ```bash
+cd lessons/clab/00-docker-networking
+uv sync --project ../../.. --group test
 uv run --project ../../.. --group test pytest tests/ -v
 ```
 
@@ -22,4 +24,12 @@ To run a specific test class:
 
 ```bash
 uv run --project ../../.. --group test pytest tests/test_docker_networking.py::TestClassName -v
+```
+
+## Cleanup
+
+Remove the test virtual environment when done:
+
+```bash
+rm -rf ../../../.venv
 ```

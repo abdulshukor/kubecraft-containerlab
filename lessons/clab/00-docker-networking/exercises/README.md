@@ -293,11 +293,14 @@ sudo ip netns exec red ping -c 2 -W 3 8.8.8.8
 
 ### Validate your work
 
-Before cleaning up, run the automated tests to verify Exercises 1-3 are set up correctly. Make sure you have re-added the masquerade rule (step 4 above) before running this:
+Before cleaning up, run the automated tests to verify Exercises 1-3 are set up correctly. Make sure you have re-added the masquerade rule (step 4 above) before running these.
+
+From the lesson directory (`lessons/clab/00-docker-networking/`), set up the test environment and run the tests:
 
 ```bash
 cd lessons/clab/00-docker-networking
-pytest tests/ -v
+uv sync --project ../../.. --group test
+uv run --project ../../.. --group test pytest tests/ -v
 ```
 
 ### Cleanup
@@ -314,6 +317,12 @@ sudo iptables -t nat -D POSTROUTING -s 10.0.0.0/24 -o enp6s0 -j MASQUERADE
 ```
 
 (Replace `enp6s0` with whatever interface you used in Exercise 3.)
+
+Remove the test virtual environment:
+
+```bash
+rm -rf ../../../.venv
+```
 
 ---
 
