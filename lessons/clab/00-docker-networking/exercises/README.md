@@ -120,20 +120,18 @@ docker rm -f c1 c2
    sudo ip link set veth-b-br up
    ```
 
-6. Configure IPs and bring interfaces up inside each namespace:
+6. Configure IPs and bring interfaces up inside each namespace (but **not** the loopback yet):
    ```bash
    # Red
    sudo ip netns exec red ip addr add 10.0.0.1/24 dev veth-r
    sudo ip netns exec red ip link set veth-r up
-   sudo ip netns exec red ip link set lo up
 
    # Blue
    sudo ip netns exec blue ip addr add 10.0.0.2/24 dev veth-b
    sudo ip netns exec blue ip link set veth-b up
-   sudo ip netns exec blue ip link set lo up
    ```
 
-7. Test connectivity:
+7. Test connectivity between namespaces:
    ```bash
    # Red to blue
    sudo ip netns exec red ping -c 3 10.0.0.2
@@ -145,10 +143,23 @@ docker rm -f c1 c2
    sudo ip netns exec red ping -c 2 10.0.0.254
    ```
 
+8. Now try pinging the loopback address inside a namespace:
+   ```bash
+   sudo ip netns exec red ping -c 2 127.0.0.1
+   ```
+   It fails. Why? The loopback interface (`lo`) starts in a DOWN state in new namespaces.
+
+9. Bring up the loopback in both namespaces and verify:
+   ```bash
+   sudo ip netns exec red ip link set lo up
+   sudo ip netns exec blue ip link set lo up
+   sudo ip netns exec red ping -c 2 127.0.0.1
+   ```
+
 ### Deliverables
 
 Document in `exercises/exercise2-answers.md`:
-- What happens if you skip bringing up the loopback (`lo`)? Try pinging `127.0.0.1` from inside the namespace, then try pinging the other namespace. Which works and which doesn't? Why?
+- Why did `127.0.0.1` fail before bringing up `lo`, even though pinging the other namespace worked? What does this tell you about how loopback differs from bridge-connected interfaces?
 - The output of `ip link show master br-study` on the host, and what each line means
 - A comparison: how is your manual setup different from what Docker does with `docker0`? (Hint: Docker automates these exact steps)
 
