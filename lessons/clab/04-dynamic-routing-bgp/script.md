@@ -122,13 +122,22 @@
 
 > "YANG paths are like filesystem paths. To reach the BGP config, the path is `/network-instance[name=default]/protocols/bgp`. To reach a specific neighbor: `/network-instance[name=default]/protocols/bgp/neighbor`. Each path targets a specific element in the device's configuration tree.
 >
+> **[VOICEOVER]**
+>
+> "Here's our topology. Same hub-and-spoke from lesson 3 -- srl1 is the hub, srl2 and srl3 are spokes, each with a host behind them. But this time, the startup configs only have interfaces. No static routes. Let's deploy."
+
+```bash
+cd lessons/clab/04-dynamic-routing-bgp
+containerlab deploy -t topology/lab.clab.yml
+```
+
 > Let me show you a quick read operation."
 
 ```bash
 # Read the system name from srl1
 gnmic -a clab-dynamic-routing-bgp-srl1:57400 -u admin -p NokiaSrl1! \
   --skip-verify -e json_ietf \
-  get --path /system/name --type config
+  get --path /system/name
 ```
 
 > "That's gNMIc reading structured data. No CLI parsing, no regex, no screen scraping. Just clean JSON in and out."
@@ -140,15 +149,6 @@ gnmic -a clab-dynamic-routing-bgp-srl1:57400 -u admin -p NokiaSrl1! \
 ---
 
 ### Section 4: Live Demo -- Static to Dynamic (3 minutes)
-
-> **[VOICEOVER]**
->
-> "Here's our topology. Same hub-and-spoke from lesson 3 -- srl1 is the hub, srl2 and srl3 are spokes, each with a host behind them. But this time, the startup configs only have interfaces. No static routes. Let's deploy."
-
-```bash
-cd lessons/clab/04-dynamic-routing-bgp
-containerlab deploy -t topology/lab.clab.yml
-```
 
 **Expected output:** Table showing 6 running containers
 
