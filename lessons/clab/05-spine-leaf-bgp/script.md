@@ -6,7 +6,7 @@
 |-------|-------|
 | **Lesson Number** | 05 |
 | **Title** | Spine-Leaf Networking with BGP |
-| **Duration Target** | 12-14 minutes |
+| **Duration Target** | 13-15 minutes |
 | **Prerequisites** | Lessons 0-4, gNMIc installed (`gnmic version`), 16 GB RAM |
 | **Learning Objectives** | Explain Clos architecture, configure eBGP underlay on a 6-router fabric, observe ECMP across spines, diagnose fabric resilience under spine failure |
 
@@ -44,57 +44,80 @@
 
 > **[VOICEOVER]**
 >
-> "In lesson 4, our 3 routers were fully meshed -- every router had a direct link to every other router. That's 3 links total. Add a 4th router and you need 6 links. With 10 routers, 45 links. With 50, over 1,200. Full mesh grows as N-squared -- it collapses under its own weight.
+> "By the end of lesson 4, our 3 routers were fully meshed -- every router directly connected to every other. That gives you redundancy, but it only works at small scale. Real data centers with hundreds of racks never tried to full-mesh their switches.
 >
-> Traditional data centers solved this with a 3-tier architecture: core, distribution, and access layers. But those designs relied on Spanning Tree Protocol, which blocks redundant links to prevent loops. You pay for redundant cables, then STP disables half of them. Wasteful.
+> Instead, they used a 3-tier architecture: core, distribution, and access layers. But those designs relied on Spanning Tree Protocol, which blocks redundant links to prevent loops. You pay for redundant cables, then STP disables half of them. Wasteful.
 >
-> Clos spine-leaf architecture fixes both problems. Instead of connecting everything to everything, you split the network into two tiers: spines and leaves. Every leaf connects to every spine, but there are no leaf-to-leaf or spine-to-spine links. With 4 leaves and 2 spines, that's only 8 links -- not 15 for a full mesh of 6 devices. Every path between any two leaves is exactly 2 router hops -- leaf, spine, leaf. And because all paths are equal length, the router can use ECMP -- equal-cost multipath -- to load-balance across all spines simultaneously. No blocked links. No wasted bandwidth.
+> Clos spine-leaf architecture -- named after Charles Clos, who published this non-blocking switch design in 1953 -- solves this. You split the network into two tiers: spines and leaves. Every leaf connects to every spine, but there are no leaf-to-leaf or spine-to-spine links. Every path between any two leaves crosses exactly one spine. And because all paths are equal length, the router can use ECMP -- equal-cost multipath -- to load-balance across all spines simultaneously. No blocked links. No wasted bandwidth.
 >
-> The key insight: to add more bandwidth, you add more spines. To add more servers, you add more leaves. Each tier scales independently without redesigning the other."
+> The key insight: to add more bandwidth, add more spines. To add more servers, add more leaves. Each tier scales independently."
 
-**Visual:** Three diagrams side by side -- full mesh (link explosion highlighted), 3-tier with STP (blocked links in red), Clos (all links green/active)
+**Visual:** Two diagrams side by side -- 3-tier with STP (blocked links in red), Clos (all links green/active)
 
 **Key Points:**
-- Full mesh: link count grows as N*(N-1)/2, doesn't scale
 - 3-tier + STP: blocks redundant links, wastes capacity
-- Clos: structured 2-tier, all links active via ECMP, tiers scale independently
+- Clos (Charles Clos, 1953): structured 2-tier, all links active via ECMP, tiers scale independently
+- Horizontal scaling: spines add bandwidth, leaves add server ports
+
+**Transition:** "But what routing protocol runs this fabric? Let's look at the design choices."
+
+---
+
+### Section 2: BGP Design Choices (90 seconds)
+
+> **[VOICEOVER]**
+>
+> "We need a routing protocol for this fabric. Lesson 4 used eBGP -- external BGP. Could we use iBGP -- internal BGP -- instead? If every device shared one AS number, all sessions would be iBGP. But iBGP has a catch: a router will not re-advertise a route learned from one iBGP peer to another. If leaf1 tells spine1 about its host subnet, spine1 would not pass it to leaf2. To fix this, you'd need either a full mesh of iBGP sessions between all devices, or a route reflector -- a designated router that's allowed to break that rule. Both add complexity.
+>
+> RFCs -- Requests for Comments -- are how the internet's protocols are documented and standardized. They are the primary source of truth for how things actually work. If you take one habit from this course, make it reading RFCs.
+>
+> RFC 7938, published in 2016, documents how large-scale data centers like Microsoft and Facebook solved this: use eBGP for everything. eBGP requires different AS numbers on each side of a session -- that's what makes it external. So each leaf gets its own ASN. The spines share a single ASN -- they never peer with each other, so there's no iBGP between them. Every spine-leaf link crosses an AS boundary, making it eBGP.
+>
+> The result: routes are re-advertised freely, no route reflectors needed. Loop prevention comes free through AS-path. And because all spines share one ASN, the AS-path through any spine looks identical -- which is exactly what ECMP needs to treat them as equal-cost paths."
+
+**Visual:** Diagram showing iBGP limitation (spine won't re-advertise) vs eBGP (spine freely re-advertises)
+
+**Key Points:**
+- iBGP won't re-advertise between peers without route reflectors
+- RFC 7938: eBGP-only underlay, unique ASN per leaf, shared ASN for all spines
+- Shared spine ASN gives identical AS-paths = natural ECMP
 
 **Transition:** "Let's look at the specific design of our fabric."
 
 ---
 
-### Section 2: Clos Design (2 minutes)
+### Section 3: Our Fabric (90 seconds)
 
 > **[VOICEOVER]**
 >
 > "Here's our fabric: 2 spines, 4 leaves, 4 hosts. Every leaf connects to every spine -- that's 8 links. Each link gets a /31 point-to-point subnet, just like lesson 4. Each leaf also connects to one host on a /24 subnet.
 >
-> For BGP, we use the RFC 7938 model: one unique AS number per device. Spines are AS 65100 and 65101. Leaves are AS 65001 through 65004. This means every link is an eBGP session. The spines' peer-group is called 'leaves' with 4 neighbors each. The leaves' peer-group is called 'spines' with 2 neighbors each. Total: 8 unique BGP sessions across the fabric.
+> Both spines share AS 65000. Leaves are AS 65001 through 65004 -- each leaf its own autonomous system, as RFC 7938 recommends. Every spine-leaf link is an eBGP session. A peer-group is a template that applies the same BGP settings to multiple neighbors. The spines' peer-group is called 'leaves' with 4 neighbors each. The leaves' peer-group is called 'spines' with 2 neighbors each. Total: 8 BGP sessions across the fabric.
 >
-> Why a unique AS per device? It keeps the BGP configuration simple and uniform. Every device has the same structure -- just different AS numbers and neighbor IPs. And it makes AS path the natural metric for path selection: a 2-hop path through one spine has AS path length 2, and there's no shorter alternative. All spine paths are equal cost, which is the prerequisite for ECMP -- though on SR Linux you still need to explicitly enable multipath to get load balancing."
+> Each router also gets a router-ID -- a unique 32-bit identifier, set to a loopback-style IP, that BGP uses to identify the router in the network."
 
 **Visual:** Topology diagram with AS numbers labeled, /31 subnets on links, /24 subnets on host segments
 
 ```
-     spine1 (AS 65100)    spine2 (AS 65101)
-      / |  \    \          / |   \    \
-   leaf1 leaf2 leaf3  leaf4
- (65001)(65002)(65003)(65004)
-    |      |      |      |
-  host1  host2  host3  host4
+     spine1 (AS 65000)    spine2 (AS 65000)
+       / |    \    \       / |    \    \
+    leaf1  leaf2  leaf3  leaf4
+  (65001) (65002) (65003) (65004)
+     |       |       |       |
+   host1   host2   host3   host4
 ```
 
 **Key Points:**
 - /31 point-to-point links between every spine-leaf pair
-- RFC 7938: unique ASN per device, every link is eBGP
+- RFC 7938: shared spine ASN (65000), unique leaf ASNs (65001-65004), every link is eBGP
 - 8 total BGP sessions (4 leaves x 2 spines)
-- Equal AS path length enables ECMP (with multipath configured)
+- Shared spine ASN gives identical AS-paths, enabling ECMP
 
 **Transition:** "Let's deploy this and see it work."
 
 ---
 
-### Section 3: Deploying the Fabric (2 minutes)
+### Section 4: Deploying the Fabric (2 minutes)
 
 > **[VOICEOVER]**
 >
@@ -121,11 +144,17 @@ docker exec clab-spine-leaf-bgp-host1 ping -c 2 -W 3 10.20.4.2
 
 ---
 
-### Section 4: Live Demo -- Configure and Verify (3 minutes)
+### Section 5: Live Demo -- Configure and Verify (3 minutes)
 
 > **[VOICEOVER]**
 >
-> "Six gNMIc commands, one per router. Each config file does four things: creates routing policies -- import-all, export-connected with a prefix-set filter for host subnets only, and export-bgp for re-advertising learned routes. It enables the ipv4-unicast address family with multipath for ECMP. And it configures BGP with the correct AS, router-ID, peer-group, and neighbors."
+> "Six gNMIc commands, one per router. Each config file creates three routing policies and chains them together -- same pattern we used in lesson 4, but worth a closer look now that 6 routers depend on it.
+>
+> The export policies are chained as a list: export-connected runs first. If a route is a connected host /24 matching the host-subnets prefix-set, accept it. If not, the next-policy default action passes it to export-bgp, which accepts BGP-learned routes. This chain is what makes spines work as transit routers -- without export-bgp, a spine would learn leaf1's host subnet but never announce it to the other leaves. SR Linux has a default-deny export policy, so nothing gets advertised unless you explicitly allow it.
+>
+> The host-subnets prefix-set filters out /31 fabric link prefixes from export-connected -- those are already known via direct connection on each router and don't need to be in BGP. Only the /24 host subnets get advertised.
+>
+> Each config also enables the IPv4 unicast address family with multipath for ECMP, and configures BGP with the correct AS, router-ID, peer-group, and neighbors."
 
 ```bash
 cd gnmic
@@ -168,13 +197,13 @@ docker exec clab-spine-leaf-bgp-host1 ping -c 3 10.20.3.2
 docker exec clab-spine-leaf-bgp-host1 ping -c 3 10.20.4.2
 ```
 
-> "All three succeed. host1 can reach host2, host3, and host4 -- all on different leaves, all going through the spine tier. Notice TTL is 61: starting at 64, minus 3 hops -- leaf1, spine, leaf. Every cross-leaf path is exactly 2 router hops."
+> "All three succeed. host1 can reach host2, host3, and host4 -- all on different leaves, all going through the spine tier. Notice TTL is 61: starting at 64, decremented once by each of the 3 routers in the path -- leaf1, the spine, and leaf4. The leaf-to-leaf path is 2 fabric hops, but hosts see 3 router hops end-to-end."
 
 **Visual:** Full terminal showing BGP neighbors, routing table with ECMP entries, successful pings
 
 ---
 
-### Section 5: Live Demo -- Spine Failure (2 minutes)
+### Section 6: Live Demo -- Spine Failure (2 minutes)
 
 > **[VOICEOVER]**
 >
@@ -200,7 +229,7 @@ exit
 docker exec clab-spine-leaf-bgp-host1 ping -c 20 -i 1 10.20.4.2
 ```
 
-> "A few packets lost during BGP convergence, then it recovers. All traffic now flows through spine2. Let's check the routing table."
+> "A few packets lost during BGP convergence, then it recovers. Recovery is fast here because disabling an interface triggers an immediate TCP teardown -- the BGP session drops instantly. In a production fabric, you'd configure BFD -- Bidirectional Forwarding Detection -- for sub-second failure detection. Without it, BGP's default hold timer is 90 seconds, meaning it could take that long to notice a neighbor is gone. All traffic now flows through spine2. Let's check the routing table."
 
 ```bash
 docker exec -it clab-spine-leaf-bgp-leaf1 sr_cli -c \
@@ -237,10 +266,11 @@ exit
 >
 > "Let's recap:
 >
-> - Clos spine-leaf replaces full mesh with a structured 2-tier design that scales. Every leaf connects to every spine, creating equal-cost paths across the fabric.
-> - RFC 7938 gives each device a unique AS number. Every link is eBGP. But ECMP isn't automatic on SR Linux -- you need to set multipath maximum-paths to enable load balancing across spines.
-> - Prefix-set filters keep the routing table clean. Only host subnets belong in BGP -- the /31 fabric links are already known via direct connection.
-> - Spine failures degrade capacity but not connectivity. With 2 spines, you lose 50% bandwidth. With 4 spines, only 25%. The fabric degrades gracefully.
+> - Clos spine-leaf -- named after Charles Clos's 1953 design -- is a structured 2-tier topology with predictable latency and all links active via ECMP.
+> - RFC 7938 recommends eBGP for the underlay because it re-advertises routes freely without needing route reflectors. Spines share a single ASN, each leaf gets its own. Every spine-leaf link is eBGP.
+> - ECMP works naturally because the shared spine ASN produces identical AS-paths through any spine. But SR Linux requires explicit multipath maximum-paths configuration to enable it.
+> - Export policy chaining makes it all work: export-connected advertises host subnets, export-bgp enables transit through spines. SR Linux's default-deny export means nothing advertises without explicit policy.
+> - Spine failures degrade capacity but not connectivity. Fast recovery depends on interface-level detection or BFD, not BGP's 90-second hold timer.
 > - This is the architecture under every major cloud and Kubernetes deployment. When you troubleshoot pod networking, this is what's underneath."
 
 ---
@@ -262,7 +292,7 @@ exit
 ## Post-Recording Checklist
 
 - [ ] Lab destroyed: `containerlab destroy --all`
-- [ ] Timing verified: ~12-14 minutes
+- [ ] Timing verified: ~13-15 minutes
 - [ ] All commands worked correctly
 - [ ] Transcript updated with actual output
 
@@ -280,11 +310,12 @@ exit
 
 ## Notes for Editing
 
-- **0:00-0:30** - Hook, overlay lesson 04 triangle topology diagram
-- **0:30-2:30** - Why spine-leaf, three architecture comparison diagrams
-- **2:30-4:30** - Clos design, topology diagram with AS numbers and addressing
-- **4:30-6:30** - Deploy fabric, show 10 containers and failed ping (no BGP yet)
-- **6:30-9:30** - Configure BGP, verify sessions, show ECMP routing table, cross-leaf pings
-- **9:30-11:30** - Spine failure demo, ping loss/recovery, ECMP path count change, restore
-- **11:30-12:00** - Recap bullet points overlay
-- **12:00-12:30** - Closing, exercises call-to-action, EVPN/VXLAN teaser
+- **0:00-0:30** - Hook, overlay lesson 04 topology diagram
+- **0:30-2:30** - Why spine-leaf, STP comparison diagrams
+- **2:30-4:00** - BGP design choices: iBGP vs eBGP, RFC 7938, shared spine ASN
+- **4:00-5:30** - Our fabric: topology diagram with AS numbers and addressing
+- **5:30-7:30** - Deploy fabric, show 10 containers and failed ping (no BGP yet)
+- **7:30-10:30** - Configure BGP, policy chain explanation, verify sessions, ECMP routing table, pings
+- **10:30-12:30** - Spine failure demo, convergence timing, ping loss/recovery, restore
+- **12:30-13:00** - Recap bullet points overlay
+- **13:00-13:30** - Closing, exercises call-to-action, EVPN/VXLAN teaser
